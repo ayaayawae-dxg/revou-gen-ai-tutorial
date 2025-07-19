@@ -67,9 +67,18 @@ with col2:
 st.divider()
 
 # Display chat messages in the state
-for message in st.session_state.messages:
+for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        col1, col2 = st.columns([10, 1])
+        with col1:
+            st.markdown(message["content"])
+        with col2:
+            if st.button("🗑️", key=f"delete_msg_{i}", help="Delete this message"):
+                # Remove the message at index i
+                st.session_state.messages.pop(i)
+                # Auto-save after deletion
+                save_current_chat()
+                st.rerun()
 
 # Accepting user input
 prompt = st.chat_input("Say something")
@@ -110,6 +119,7 @@ if prompt:
 
     # Auto-save the current chat after each interaction
     save_current_chat()
+    st.rerun()
 
 # Sidebar for chat history
 with st.sidebar:
