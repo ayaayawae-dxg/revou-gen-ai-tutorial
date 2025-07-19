@@ -29,7 +29,7 @@ all_splits = text_splitter.split_documents(docs)
 vector_store.add_documents(all_splits)
 
 
-llm = init_chat_model("gpt-4.1-mini", model_provider="openai")
+llm = init_chat_model("gpt-4.1-nano", model_provider="openai")
 @tool(response_format="content_and_artifact")
 def retrieve(query: str):
     """Retrieve information related to a query."""
