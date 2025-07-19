@@ -1,6 +1,6 @@
 from langchain.chat_models import init_chat_model
 from langchain_core.tools import tool
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, AIMessage
 from langgraph.graph import MessagesState, StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_milvus import Milvus
@@ -97,7 +97,6 @@ def generate(state: MessagesState):
     # Run
     response = llm.invoke(prompt)
     return {"messages": [response]}
-
 
 graph = (
     StateGraph(MessagesState)
