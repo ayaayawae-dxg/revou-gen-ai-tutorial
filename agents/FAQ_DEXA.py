@@ -7,6 +7,7 @@ from langchain_milvus import Milvus
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langgraph.checkpoint.memory import InMemorySaver
 
 from dotenv import load_dotenv
 load_dotenv(override=True)
@@ -98,6 +99,9 @@ def generate(state: MessagesState):
     response = llm.invoke(prompt)
     return {"messages": [response]}
 
+# Create memory checkpointer
+memory = InMemorySaver()
+
 graph = (
     StateGraph(MessagesState)
     .add_node(query_or_respond)
@@ -105,11 +109,11 @@ graph = (
     .add_node(generate)
     .set_entry_point("query_or_respond")
     .add_conditional_edges(
-    "query_or_respond",
+        "query_or_respond",
         tools_condition,
-        {END: END, "tools": "tools"},
+        {END: "generate", "tools": "tools"},
     )
     .add_edge("tools", "generate")
     .add_edge("generate", END)
-    .compile(name="RAG")
+    .compile(name="RAG", checkpointer=memory)
 )

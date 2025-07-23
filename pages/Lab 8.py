@@ -126,7 +126,7 @@ def assess_rag_quality(state: SupervisorState) -> Command[Literal["FAQ_DEXA", EN
         return Command(goto=END)
 
 
-# memory = InMemorySaver()
+memory = InMemorySaver()
 supervisor_agent = (
     StateGraph(SupervisorState)
     .add_node(supervisor)
@@ -135,11 +135,15 @@ supervisor_agent = (
     .add_node("FAQ_DEXA", callFAQ_DEXA)
     .add_node("assess_rag_quality", assess_rag_quality)
     .add_edge(START, "supervisor")
-    .compile(name="supervisor")
+    .compile(name="supervisor", checkpointer=memory)
 )
 
 prompt = st.chat_input("Write your question here ... ")
 if prompt:
+    import uuid
+    
+    if "current_chat_id" not in st.session_state:
+        st.session_state.current_chat_id = str(uuid.uuid4())
     with st.chat_message("human"):
         st.markdown(prompt)
 
@@ -149,8 +153,11 @@ if prompt:
         answer_placeholder = st.empty()
         status_placeholder.status(label="Process Start")
         state = "Process Start"
+
+        config = {"configurable": {"thread_id": st.session_state.current_chat_id}}
+
         for chunk, metadata in supervisor_agent.stream(
-            {"messages": HumanMessage(content=prompt)}, stream_mode="messages"
+            {"messages": HumanMessage(content=prompt)}, stream_mode="messages", config=config
         ):
             if metadata["langgraph_node"] != state:
                 status_placeholder.status(label=metadata["langgraph_node"])

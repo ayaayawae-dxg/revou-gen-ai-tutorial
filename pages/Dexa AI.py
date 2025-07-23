@@ -97,8 +97,13 @@ if prompt:
         state = "Process Start"
         final_answer = ""
 
+        # Create config with thread_id for memory persistence
+        config = {"configurable": {"thread_id": st.session_state.current_chat_id}}
+
         for chunk, metadata in FAQ_DEXA.graph.stream(
-            {"messages": HumanMessage(content=prompt)}, stream_mode="messages"
+            {"messages": HumanMessage(content=prompt)}, 
+            stream_mode="messages",
+            config=config  # Add config parameter
         ):
             current_node = metadata["langgraph_node"]
 
